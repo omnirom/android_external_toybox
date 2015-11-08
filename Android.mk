@@ -407,3 +407,12 @@ LOCAL_UNSTRIPPED_PATH := $(PRODUCT_OUT)/symbols/utilities
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 LOCAL_PACK_MODULE_RELOCATIONS := false
 include $(BUILD_EXECUTABLE)
+
+# Host binary to enumerate the toys
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := scripts/install.c
+LOCAL_MODULE_TAGS := optional
+LOCAL_CFLAGS := $(common_cflags)
+LOCAL_CLANG := true
+LOCAL_MODULE := toybox-instlist
+include $(BUILD_HOST_EXECUTABLE)
