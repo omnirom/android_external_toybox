@@ -805,17 +805,24 @@ struct syslogd_data {
 struct tar_data {
   char *f, *C;
   struct arg_list *T, *X;
-  char *to_command;
-  struct arg_list *exc;
+  char *to_command, *owner, *group, *mtime;
+  struct arg_list *exclude;
 
-// exc is an argument but inc isn't?
-  struct arg_list *inc, *pass;
-  void *inodes;
+  struct double_list *incl, *excl, *seen;
+  struct string_list *dirs;
   char *cwd;
-  int fd;
+  int fd, ouid, ggid, hlc, warn, adev, aino;
+  time_t mtt;
+
+  // hardlinks seen so far (hlc many)
+  struct {
+    char *arg;
+    ino_t ino;
+    dev_t dev;
+  } *hlx;
 
   // Parsed information about a tar header.
-  struct {
+  struct tar_header {
     char *name, *link_target, *uname, *gname;
     long long size;
     uid_t uid;
@@ -937,8 +944,11 @@ struct useradd_data {
 // toys/pending/vi.c
 
 struct vi_data {
-  struct linestack *ls;
-  char *statline;
+    int cur_col;
+    int cur_row;
+    unsigned screen_height;
+    unsigned screen_width;
+    int vi_mode;
 };
 
 // toys/pending/wget.c
