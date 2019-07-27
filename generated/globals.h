@@ -65,6 +65,7 @@ struct killall_data {
   pid_t cur_pid;
   char **names;
   short *err;
+  struct int_list { struct int_list *next; int val; } *pids;
 };
 
 // toys/lsb/md5sum.c
@@ -397,6 +398,12 @@ struct switch_root_data {
   char *c;
 
   dev_t rootdev;
+};
+
+// toys/other/tac.c
+
+struct tac_data {
+  struct double_list *dl;
 };
 
 // toys/other/timeout.c
@@ -1183,6 +1190,7 @@ struct nl_data {
 
   // Count of consecutive blank lines for -l has to persist between files
   long lcount;
+  long slen;
 };
 
 // toys/posix/od.c
@@ -1446,6 +1454,7 @@ extern union global_union {
 	struct stat_data stat;
 	struct swapon_data swapon;
 	struct switch_root_data switch_root;
+	struct tac_data tac;
 	struct timeout_data timeout;
 	struct truncate_data truncate;
 	struct watch_data watch;
