@@ -27,7 +27,7 @@ int terminal_size(unsigned *xx, unsigned *yy)
   // stdin, stdout, stderr
   for (i=0; i<3; i++) {
     memset(&ws, 0, sizeof(ws));
-    if (!ioctl(i, TIOCGWINSZ, &ws)) {
+    if (isatty(i) && !ioctl(i, TIOCGWINSZ, &ws)) {
       if (ws.ws_col) x = ws.ws_col;
       if (ws.ws_row) y = ws.ws_row;
 
@@ -56,18 +56,18 @@ int terminal_probesize(unsigned *xx, unsigned *yy)
 
   // Send probe: bookmark cursor position, jump to bottom right,
   // query position, return cursor to bookmarked position.
-  xprintf("\e[s\e[999C\e[999B\e[6n\e[u");
+  xprintf("\033[s\033[999C\033[999B\033[6n\033[u");
 
   return 0;
 }
 
 // Wrapper that parses results from ANSI probe to update screensize.
 // Otherwise acts like scan_key()
-int scan_key_getsize(char *scratch, int miliwait, unsigned *xx, unsigned *yy)
+int scan_key_getsize(char *scratch, int timeout_ms, unsigned *xx, unsigned *yy)
 {
   int key;
 
-  if (512&(key = scan_key(scratch, miliwait))) {
+  if (512&(key = scan_key(scratch, timeout_ms))) {
     if (key>0) {
       if (xx) *xx = (key>>10)&1023;
       if (yy) *yy = (key>>20)&1023;
@@ -80,12 +80,14 @@ int scan_key_getsize(char *scratch, int miliwait, unsigned *xx, unsigned *yy)
 }
 
 // Reset terminal to known state, saving copy of old state if old != NULL.
-int set_terminal(int fd, int raw, struct termios *old)
+int set_terminal(int fd, int raw, int speed, struct termios *old)
 {
   struct termios termio;
+  int i = tcgetattr(fd, &termio);
 
   // Fetch local copy of old terminfo, and copy struct contents to *old if set
-  if (!tcgetattr(fd, &termio) && old) *old = termio;
+  if (i) return i;
+  if (old) *old = termio;
 
   // the following are the bits set for an xterm. Linux text mode TTYs by
   // default add two additional bits that only matter for serial processing
@@ -110,12 +112,28 @@ int set_terminal(int fd, int raw, struct termios *old)
 
   if (raw) cfmakeraw(&termio);
 
-  return tcsetattr(fd, TCSANOW, &termio);
+  if (speed) {
+    int i, speeds[] = {50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400,
+                    4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800,
+                    500000, 576000, 921600, 1000000, 1152000, 1500000, 2000000,
+                    2500000, 3000000, 3500000, 4000000};
+
+    // Find speed in table, adjust to constant
+    for (i = 0; i < ARRAY_LEN(speeds); i++) if (speeds[i] == speed) break;
+    if (i == ARRAY_LEN(speeds)) error_exit("unknown speed: %d", speed);
+    cfsetspeed(&termio, i+1+4081*(i>15));
+  }
+
+  return tcsetattr(fd, TCSAFLUSH, &termio);
 }
 
-void xset_terminal(int fd, int raw, struct termios *old)
+void xset_terminal(int fd, int raw, int speed, struct termios *old)
 {
-  if (-1 == set_terminal(fd, raw, old)) perror_exit("bad tty fd#%d", fd);
+  if (-1 != set_terminal(fd, raw, speed, old)) return;
+
+  sprintf(libbuf, "/proc/self/fd/%d", fd);
+  libbuf[readlink0(libbuf, libbuf, sizeof(libbuf))] = 0;
+  perror_exit("tcsetattr %s", libbuf);
 }
 
 struct scan_key_list {
@@ -139,13 +157,13 @@ struct scan_key_list {
 );
 
 // Scan stdin for a keypress, parsing known escape sequences
-// Blocks for miliwait miliseconds, none 0, forever if -1
+// Blocks for timeout_ms milliseconds, none 0, forever if -1
 // Returns: 0-255=literal, -1=EOF, -2=TIMEOUT, 256-...=index into scan_key_list
 // >512 is x<<9+y<<21
 // scratch space is necessary because last char of !seq could start new seq
 // Zero out first byte of scratch before first call to scan_key
 // block=0 allows fetching multiple characters before updating display
-int scan_key(char *scratch, int miliwait)
+int scan_key(char *scratch, int timeout_ms)
 {
   struct pollfd pfd;
   int maybe, i, j;
@@ -192,14 +210,14 @@ int scan_key(char *scratch, int miliwait)
 
     // Need more data to decide
 
-    // 30 miliseconds is about the gap between characters at 300 baud 
-    if (maybe || miliwait != -1)
-      if (!xpoll(&pfd, 1, maybe ? 30 : miliwait)) break;
+    // 30ms is about the gap between characters at 300 baud
+    if (maybe || timeout_ms != -1)
+      if (!xpoll(&pfd, 1, maybe ? 30 : timeout_ms)) break;
 
     // Read 1 byte so we don't overshoot sequence match. (We can deviate
     // and fail to match, but match consumes entire buffer.)
-    if (toys.signal || 1 != read(0, scratch+1+*scratch, 1))
-      return toys.signal ? -3 : -1;
+    if (toys.signal>0 || 1 != read(0, scratch+1+*scratch, 1))
+      return (toys.signal>0) ? -3 : -1;
     ++*scratch;
   }
 
@@ -226,7 +244,7 @@ void tty_jump(int x, int y)
 
 void tty_reset(void)
 {
-  set_terminal(0, 0, 0);
+  set_terminal(0, 0, 0, 0);
   tty_esc("?25h");
   tty_esc("0m");
   tty_jump(0, 999);
@@ -239,4 +257,21 @@ void tty_sigreset(int i)
 {
   tty_reset();
   _exit(i ? 128+i : 0);
+}
+
+void start_redraw(unsigned *width, unsigned *height)
+{
+  // If never signaled, do raw mode setup.
+  if (!toys.signal) {
+    *width = 80;
+    *height = 25;
+    set_terminal(0, 1, 0, 0);
+    sigatexit(tty_sigreset);
+    xsignal(SIGWINCH, generic_signal);
+  }
+  if (toys.signal != -1) {
+    toys.signal = -1;
+    terminal_probesize(width, height);
+  }
+  xprintf("\033[H\033[J");
 }
