@@ -27,21 +27,21 @@ config DMESG
 #include <sys/klog.h>
 
 GLOBALS(
-  long level;
-  long size;
+  long n;
+  long s;
 )
 
 void dmesg_main(void)
 {
   // For -n just tell kernel to which messages to keep.
   if (toys.optflags & FLAG_n) {
-    if (klogctl(8, NULL, TT.level)) perror_exit("klogctl");
+    if (klogctl(8, NULL, TT.n)) perror_exit("klogctl");
   } else {
     char *data, *to, *from;
     int size;
 
     // Figure out how much data we need, and fetch it.
-    size = TT.size;
+    size = TT.s;
     if (!size && 1>(size = klogctl(10, 0, 0))) perror_exit("klogctl");;
     data = to = from = xmalloc(size+1);
     size = klogctl(3 + (toys.optflags & FLAG_c), data, size);
