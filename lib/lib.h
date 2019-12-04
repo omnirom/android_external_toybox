@@ -255,9 +255,6 @@ int qstrcmp(const void *a, const void *b);
 void create_uuid(char *uuid);
 char *show_uuid(char *uuid);
 char *next_printf(char *s, char **start);
-int dev_minor(int dev);
-int dev_major(int dev);
-int dev_makedev(int major, int minor);
 struct passwd *bufgetpwuid(uid_t uid);
 struct group *bufgetgrgid(gid_t gid);
 int readlinkat0(int dirfd, char *path, char *buf, int len);
@@ -402,6 +399,7 @@ mode_t string_to_mode(char *mode_str, mode_t base);
 void mode_to_string(mode_t mode, char *buf);
 char *getbasename(char *name);
 char *fileunderdir(char *file, char *dir);
+char *relative_path(char *from, char *to);
 void names_to_pid(char **names, int (*callback)(pid_t pid, char *name),
     int scripts);
 

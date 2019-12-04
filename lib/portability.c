@@ -396,6 +396,23 @@ int mknodat(int dirfd, const char *path, mode_t mode, dev_t dev)
   if (fchdir(old_dirfd) == -1) perror_exit("mknodat couldn't return");
   return result;
 }
+
+// As of 10.15, macOS offers an fcntl F_PREALLOCATE rather than fallocate()
+// or posix_fallocate() calls.
+int posix_fallocate(int fd, off_t offset, off_t length)
+{
+  int e = errno, result;
+  fstore_t f;
+
+  f.fst_flags = F_ALLOCATEALL;
+  f.fst_posmode = F_PEOFPOSMODE;
+  f.fst_offset = offset;
+  f.fst_length = length;
+  if (fcntl(fd, F_PREALLOCATE, &f) == -1) result = errno;
+  else result = ftruncate(fd, length);
+  errno = e;
+  return result;
+}
 #endif
 
 // Signals required by POSIX 2008:
@@ -497,4 +514,37 @@ char *num_to_sig(int sig)
 #endif
 
   return NULL;
+}
+
+int dev_minor(int dev)
+{
+#if defined(__linux__)
+  return ((dev&0xfff00000)>>12)|(dev&0xff);
+#elif defined(__APPLE__)
+  return dev&0xffffff;
+#else
+#error
+#endif
+}
+
+int dev_major(int dev)
+{
+#if defined(__linux__)
+  return (dev&0xfff00)>>8;
+#elif defined(__APPLE__)
+  return (dev>>24)&0xff;
+#else
+#error
+#endif
+}
+
+int dev_makedev(int major, int minor)
+{
+#if defined(__linux__)
+  return (minor&0xff)|((major&0xfff)<<8)|((minor&0xfff00)<<12);
+#elif defined(__APPLE__)
+  return (minor&0xffffff)|((major&0xff)<<24);
+#else
+#error
+#endif
 }

@@ -39,7 +39,7 @@ GLOBALS(
 )
 
 // Seconds from 1900 to 1970, including appropriate leap days
-#define SEVENTIES 2208988800L
+#define SEVENTIES 2208988800UL
 
 // Get time and return ntptime (saving timespec in pointer if not null)
 // NTP time is high 32 bits = seconds since 1970 (blame RFC 868), low 32 bits
@@ -214,7 +214,7 @@ void sntp_main(void)
           memset(&tx, 0, sizeof(struct timex));
           tx.offset = tv2.tv_sec*1000000+tv2.tv_nsec/1000;
           tx.modes = ADJ_OFFSET_SINGLESHOT;
-          if (adjtimex(&tx) == -1) perror_exit("adjtime");
+          if (adjtimex(&tx) == -1) perror_exit("adjtimex");
         }
 
         // Display the time and offset

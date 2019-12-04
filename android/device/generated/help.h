@@ -400,6 +400,8 @@
 
 #define HELP_getty "usage: getty [OPTIONS] BAUD_RATE[,BAUD_RATE]... TTY [TERMTYPE]\n\n-h    Enable hardware RTS/CTS flow control\n-L    Set CLOCAL (ignore Carrier Detect state)\n-m    Get baud rate from modem's CONNECT status message\n-n    Don't prompt for login name\n-w    Wait for CR or LF before sending /etc/issue\n-i    Don't display /etc/issue\n-f ISSUE_FILE  Display ISSUE_FILE instead of /etc/issue\n-l LOGIN  Invoke LOGIN instead of /bin/login\n-t SEC    Terminate after SEC if no login name is read\n-I INITSTR  Send INITSTR before anything else\n-H HOST    Log HOST into the utmp file as the hostname"
 
+#define HELP_getopt "usage: getopt [OPTIONS] [--] ARG...\n\nParse command-line options for use in shell scripts.\n\n-a	Allow long options starting with a single -.\n-l OPTS	Specify long options.\n-n NAME	Command name for error messages.\n-o OPTS	Specify short options.\n-T	Test whether this is a modern getopt.\n-u	Output options unquoted."
+
 #define HELP_getfattr "usage: getfattr [-d] [-h] [-n NAME] FILE...\n\nRead POSIX extended attributes.\n\n-d	Show values as well as names\n-h	Do not dereference symbolic links\n-n	Show only attributes with the given name\n--only-values	Don't show names"
 
 #define HELP_fsck "usage: fsck [-ANPRTV] [-C FD] [-t FSTYPE] [FS_OPTS] [BLOCKDEV]...\n\nCheck and repair filesystems\n\n-A      Walk /etc/fstab and check all filesystems\n-N      Don't execute, just show what would be done\n-P      With -A, check filesystems in parallel\n-R      With -A, skip the root filesystem\n-T      Don't show title on startup\n-V      Verbose\n-C n    Write status information to specified file descriptor\n-t TYPE List of filesystem types to check"
@@ -520,11 +522,11 @@
 
 #define HELP_mkdir "usage: mkdir [-vp] [-m mode] [dirname...]\n\nCreate one or more directories.\n\n-m	Set permissions of directory to mode\n-p	Make parent directories as needed\n-v	Verbose"
 
-#define HELP_ls "usage: ls [-ACFHLRSZacdfhiklmnpqrstux1] [--color[=auto]] [directory...]\n\nList files.\n\nwhat to show:\n-a  all files including .hidden    -b  escape nongraphic chars\n-c  use ctime for timestamps       -d  directory, not contents\n-i  inode number                   -p  put a '/' after dir names\n-q  unprintable chars as '?'       -s  storage used (1024 byte units)\n-u  use access time for timestamps -A  list all files but . and ..\n-H  follow command line symlinks   -L  follow symlinks\n-R  recursively list in subdirs    -F  append /dir *exe @sym |FIFO\n-Z  security context\n\noutput formats:\n-1  list one file per line         -C  columns (sorted vertically)\n-g  like -l but no owner           -h  human readable sizes\n-l  long (show full details)       -m  comma separated\n-n  like -l but numeric uid/gid    -o  like -l but no group\n-x  columns (horizontal sort)      -ll long with nanoseconds (--full-time)\n--color  device=yellow  symlink=turquoise/red  dir=blue  socket=purple\n         files: exe=green  suid=red  suidfile=redback  stickydir=greenback\n         =auto means detect if output is a tty.\n\nsorting (default is alphabetical):\n-f  unsorted    -r  reverse    -t  timestamp    -S  size"
+#define HELP_ls "usage: ls [-ACFHLRSZacdfhiklmnpqrstuwx1] [--color[=auto]] [directory...]\n\nList files.\n\nwhat to show:\n-a  all files including .hidden    -b  escape nongraphic chars\n-c  use ctime for timestamps       -d  directory, not contents\n-i  inode number                   -p  put a '/' after dir names\n-q  unprintable chars as '?'       -s  storage used (1024 byte units)\n-u  use access time for timestamps -A  list all files but . and ..\n-H  follow command line symlinks   -L  follow symlinks\n-R  recursively list in subdirs    -F  append /dir *exe @sym |FIFO\n-Z  security context\n\noutput formats:\n-1  list one file per line         -C  columns (sorted vertically)\n-g  like -l but no owner           -h  human readable sizes\n-l  long (show full details)       -m  comma separated\n-n  like -l but numeric uid/gid    -o  like -l but no group\n-w  set column width               -x  columns (horizontal sort)\n-ll long with nanoseconds (--full-time)\n--color  device=yellow  symlink=turquoise/red  dir=blue  socket=purple\n         files: exe=green  suid=red  suidfile=redback  stickydir=greenback\n         =auto means detect if output is a tty.\n\nsorting (default is alphabetical):\n-f  unsorted    -r  reverse    -t  timestamp    -S  size"
 
 #define HELP_logger "usage: logger [-s] [-t TAG] [-p [FACILITY.]PRIORITY] [message...]\n\nLog message (or stdin) to syslog.\n\n-s	Also write message to stderr\n-t	Use TAG instead of username to identify message source\n-p	Specify PRIORITY with optional FACILITY. Default is \"user.notice\""
 
-#define HELP_ln "usage: ln [-sfnv] [-t DIR] [FROM...] TO\n\nCreate a link between FROM and TO.\nOne/two/many arguments work like \"mv\" or \"cp\".\n\n-s	Create a symbolic link\n-f	Force the creation of the link, even if TO already exists\n-n	Symlink at TO treated as file\n-t	Create links in DIR\n-T	TO always treated as file, max 2 arguments\n-v	Verbose"
+#define HELP_ln "usage: ln [-sfnv] [-t DIR] [FROM...] TO\n\nCreate a link between FROM and TO.\nOne/two/many arguments work like \"mv\" or \"cp\".\n\n-s	Create a symbolic link\n-f	Force the creation of the link, even if TO already exists\n-n	Symlink at TO treated as file\n-r	Create relative symlink from -> to\n-t	Create links in DIR\n-T	TO always treated as file, max 2 arguments\n-v	Verbose"
 
 #define HELP_link "usage: link FILE NEWLINK\n\nCreate hardlink to a file."
 
@@ -538,9 +540,9 @@
 
 #define HELP_groups "usage: groups [user]\n\nPrint the groups a user is in."
 
-#define HELP_id "usage: id [-GZgnru] [USER...]\n\nPrint user and group ID.\n-G	Show only the group IDs\n-Z	Show only security context\n-g	Show only the effective group ID\n-n	Print names instead of numeric IDs (to be used with -Ggu)\n-r	Show real ID instead of effective ID\n-u	Show only the effective user ID"
+#define HELP_id "usage: id [-GZgnru] [USER...]\n\nPrint user and group ID.\n-G	Show all group IDs\n-Z	Show only security context\n-g	Show only the effective group ID\n-n	Print names instead of numeric IDs (to be used with -Ggu)\n-r	Show real ID instead of effective ID\n-u	Show only the effective user ID"
 
-#define HELP_iconv "usage: iconv [-f FROM] [-t TO] [FILE...]\n\nConvert character encoding of files.\n\n-c	Omit invalid chars\n-f	Convert from (default utf8)\n-t	Convert to   (default utf8)"
+#define HELP_iconv "usage: iconv [-f FROM] [-t TO] [FILE...]\n\nConvert character encoding of files.\n\n-c	Omit invalid chars\n-f	Convert from (default UTF-8)\n-t	Convert to   (default UTF-8)"
 
 #define HELP_head "usage: head [-n number] [file...]\n\nCopy first lines from files to stdout. If no files listed, copy from\nstdin. Filename \"-\" is a synonym for stdin.\n\n-n	Number of lines to copy\n-c	Number of bytes to copy\n-q	Never print headers\n-v	Always print headers"
 

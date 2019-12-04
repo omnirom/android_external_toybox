@@ -245,8 +245,7 @@ struct dos2unix_data {
 // toys/other/fallocate.c
 
 struct fallocate_data {
-  long offset;
-  long size;
+  long o, l;
 };
 
 // toys/other/fmt.c
@@ -633,6 +632,13 @@ struct fsck_data {
 
 struct getfattr_data {
   char *n;
+};
+
+// toys/pending/getopt.c
+
+struct getopt_data {
+  struct arg_list *l;
+  char *o, *n;
 };
 
 // toys/pending/getty.c
@@ -1171,6 +1177,7 @@ struct logger_data {
 // toys/posix/ls.c
 
 struct ls_data {
+  long w;
   long l;
   char *color;
 
@@ -1499,6 +1506,7 @@ extern union global_union {
 	struct fold_data fold;
 	struct fsck_data fsck;
 	struct getfattr_data getfattr;
+	struct getopt_data getopt;
 	struct getty_data getty;
 	struct groupadd_data groupadd;
 	struct host_data host;

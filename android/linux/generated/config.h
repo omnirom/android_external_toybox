@@ -68,8 +68,8 @@
 #define USE_BASE64(...)
 #define CFG_BASENAME 1
 #define USE_BASENAME(...) __VA_ARGS__
-#define CFG_BC 1
-#define USE_BC(...) __VA_ARGS__
+#define CFG_BC 0
+#define USE_BC(...)
 #define CFG_BLKID 0
 #define USE_BLKID(...)
 #define CFG_BLOCKDEV 0
@@ -228,6 +228,8 @@
 #define USE_GETENFORCE(...)
 #define CFG_GETFATTR 0
 #define USE_GETFATTR(...)
+#define CFG_GETOPT 0
+#define USE_GETOPT(...)
 #define CFG_GETTY 0
 #define USE_GETTY(...)
 #define CFG_GREP 1
