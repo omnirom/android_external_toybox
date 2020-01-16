@@ -468,8 +468,8 @@
 #define USE_PWD(...) __VA_ARGS__
 #define CFG_READAHEAD 0
 #define USE_READAHEAD(...)
-#define CFG_READELF 0
-#define USE_READELF(...)
+#define CFG_READELF 1
+#define USE_READELF(...) __VA_ARGS__
 #define CFG_READLINK 1
 #define USE_READLINK(...) __VA_ARGS__
 #define CFG_REALPATH 1
@@ -640,8 +640,8 @@
 #define USE_UUIDGEN(...) __VA_ARGS__
 #define CFG_VCONFIG 1
 #define USE_VCONFIG(...) __VA_ARGS__
-#define CFG_VI 0
-#define USE_VI(...)
+#define CFG_VI 1
+#define USE_VI(...) __VA_ARGS__
 #define CFG_VMSTAT 1
 #define USE_VMSTAT(...) __VA_ARGS__
 #define CFG_WATCH 1
